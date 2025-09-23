@@ -12,6 +12,8 @@ export default function BlockedUsersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
 
+ 
+
   // Fetch blocked users from backend
   useEffect(() => {
     fetch("http://localhost:8081/api/blocked-users", {
@@ -45,10 +47,23 @@ export default function BlockedUsersPage() {
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
+  const currentPageUsers = users.slice(startIndex, startIndex + itemsPerPage);
   const paginatedUsers = filteredUsers.slice(
     startIndex,
     startIndex + itemsPerPage
   )
+
+  const filteredUsersOnPage = useMemo(() => {
+  const q = search.trim().toLowerCase();
+  if (!q) return currentPageUsers;
+  return currentPageUsers.filter(
+    (u) =>
+      u.admissionNumber?.toLowerCase().includes(q) ||
+      u.name?.toLowerCase().includes(q) ||
+      u.branch?.toLowerCase().includes(q) ||
+      u.section?.toLowerCase().includes(q)
+  );
+}, [currentPageUsers, search]);
 
   // Unblock user API call
   const handleUnblockUser = (blockedUserId) => {
@@ -161,73 +176,9 @@ export default function BlockedUsersPage() {
                 </tr>
               )}
 
-              {/* {!loading && filteredUsers.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className="px-4 py-6 text-center text-sm text-gray-500"
-                  >
-                    No blocked users found.
-                  </td>
-                </tr>
-              )} */}
 
-              {/* {filteredUsers.map((user, index) => (
-                <tr
-                  // key={${user.blockId}-${index}}
-                  className="hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.admissionNumber}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.branch}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.section}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.testId}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800 max-w-xs">
-                    <div className="truncate" title={user.reason}>
-                      {user.reason}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                        user.status === "unlock"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {user.blockDateAndTime}
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.status === "block" && (
-                      <button
-                        className="inline-flex items-center gap-1 rounded-md bg-[#235a81] px-3 py-1.5 text-sm text-white hover:bg-[#1e4a6f] focus:outline-none focus:ring-2 focus:ring-[#235a81] focus:ring-offset-1"
-                        title="Unblock user"
-                        // aria-label={Unblock ${user.name}}
-                        onClick={() => handleUnblockUser(user.blockId)}
-                      >
-                        <Unlock size={16} />
-                        Unblock
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))} */}
-              {paginatedUsers.map((user, index) => (
-                <tr key={`${user.blockId}-${index}`} className="hover:bg-gray-50">
+              {filteredUsersOnPage.map((user, index) => (
+                <tr key={index} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm text-gray-800">
                     {user.admissionNumber}
                   </td>

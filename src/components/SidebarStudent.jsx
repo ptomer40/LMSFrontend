@@ -41,11 +41,11 @@ const navItems = [
 
 ];
 
-export function SidebarStudent() {
+export function SidebarStudent({className=''}) {
     const [activeItem, setActiveItem] = useState('Dashboard');
 
     return (
-        <div className="w-64 h-screen bg-[#235a81] flex flex-col">
+        <div className={`w-64 h-screen bg-[#235a81] flex flex-col ${className}`}>
 
 
 

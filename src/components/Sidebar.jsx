@@ -29,7 +29,8 @@ const navItems = [
   { title: "Upload Users", url: "upload-users", icon: Upload, privilege: "upload-users" },
 ];
 
-export function Sidebar() {
+export function Sidebar({className=''}) {
+
     const [activeItem, setActiveItem] = useState('Dashboard');
 
      // Get privileges & admin flag
@@ -48,7 +49,7 @@ export function Sidebar() {
   });
 
     return (
-       <div className="w-64 h-screen bg-[#235a81] flex flex-col">
+       <div className={`w-64 h-screen bg-[#235a81] flex flex-col ${className}`}>
       <nav className="flex-1 overflow-y-auto">
         <ul>
           {filteredNavItems.map((item) => (

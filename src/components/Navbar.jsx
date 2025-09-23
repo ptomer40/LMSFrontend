@@ -1,9 +1,12 @@
 import React from "react"
 import { LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { Menu } from "lucide-react"
 
-export const Navbar = () => {
+export const Navbar = ({ onMenuClick }) => {
   const navigate = useNavigate()
+
+  const role = localStorage.getItem('role');
 
  const handleLogout = async () => {
     try {
@@ -20,14 +23,20 @@ export const Navbar = () => {
 
   return (
     <nav className="flex items-center justify-between h-16 px-6 bg-[#235a81] shadow-md ">
-      <div className="flex items-center justify-center">
-        <h1 className="text-xl font-semibold text-white">Admin Panel</h1>
+     <div className="flex items-center gap-4">
+        <button onClick={onMenuClick} aria-label="Toggle sidebar" className="p-2 rounded-md text-white hover:bg-[#1e4f6f]">
+          <Menu />
+        </button>
+        <h1 className="text-xl font-semibold text-white ">{role === 'ADMIN' ? 'Admin' : 'User'} Panel</h1>
       </div>
+      <div>
+          <h2 className="text-xl font-bold text-white">Learning Management System</h2>
+        </div>
 
       <div className="flex items-center space-x-4">
         {/* Profile circle */}
         <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-sm text-gray-600">
-          AD
+          {role === 'ADMIN' ? 'A' : 'U'}
         </div>
 
         {/* Logout button */}

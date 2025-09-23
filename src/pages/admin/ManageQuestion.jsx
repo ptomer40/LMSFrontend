@@ -1,57 +1,384 @@
-import React from 'react';
+"use client"
+
+import { useState, useEffect } from "react"
 
 export default function ManageQuestions() {
-  // Sample data based on the provided image
-  const questions = [
-    {
-      id: 1,
-      questionText: `<section><h1>React Assignment: Create a Student ICARD Component</h1><p>You are provided with a basic <code>App</code> component template. Your task is to create a <strong>Student ICARD</strong> using React inside the <code>App</code> component. You can create additional child components if needed, but <strong>make sure to call them inside the <code>App</code> component only</strong>.</p><h2>Requirements:</h2><ul><li>Design the ICARD to display the student's photo and information clearly and in a readable format.</li><li>The data to display (in order) is:</li><ul><li><code>College Name: ABES Engineering College Roll: 56565656 Name: Rahul Kumar Branch: CSE Section: A</code></li><li>Use <strong>inline styles</strong> for all styling.</li></ul><li>Your solution will be evaluated on:</li><ul><li>Correct and semantic DOM structure</li><li>Proper use of inline styles to match the design layout</li><li>Correct content and sequence as shown above</li></ul><h2>Additional Notes:</h2><ul><li>You may create separate React components, but those components must be invoked inside the <code>App</code> component.</li><li>The photo of the student should be included in the card (you can use any placeholder image URL).</li><li>Follow the layout and styling as per the reference image (provided separately).</li><li>Your code will be tested with automated test cases checking the DOM structure, styles, and content accuracy.</li><li>Weightage of test cases may vary.</li></ul></section>`,
-      answer: `<div id="output" class="output" style="flex: 3 1 0%;"><div style="margin-left: 300px;"><div style="height: 250px; width: 200px; border: 2px solid red; background-color: blanchedalmond;"><d>B</d><d>D</d><table><tbody><tr><td colspan="2">ABES Engineering College</td></tr><tr><td colspan="2"><img src="https://img.freepik.com/free-photo/lifestyle-business-people-using-laptop-computer-pink_1150-15549.jpg?t=1749050525-exp=1749054125-hmac=674e87b20b0772700780e68e5ab23fddbb7de553cefa9b496e25a2da8e22b63e&amp;w=1480" height="100" width="100" alt="student pic"></td></tr><tr><td>Roll</td><td>56565656</td></tr><tr><td>Name</td><td>Rahul Kumar</td></tr><tr><td>Branch</td><td>CSE AIML</td></tr></tbody></table></div></div></div>`,
-      level: 'medium',
-    },
-    {
-      id: 2,
-      questionText: `<section><h1>Create a Tabbed Dashboard Interface in React</h1><p>You are building a Dashboard interface for a web application using React. Your task is to design a tabbed layout that allows users to switch between three different views: <code>Home</code>, <code>Profile</code>, and <code>Settings</code>. The layout must be visually clear and responsive, using JSX and CSS styling, and it should rely on React state (<code>useState</code>) to handle tab switching.</p><h2>Requirements:</h2><ul><li>Each tab must render a different component or section of the UI.</li><ul><li><code>Home</code> tab should show a welcome message and a summary box.</li><li><code>Profile</code> tab should show user information like name, email, and role.</li><li><code>Settings</code> tab should display toggle switches for notifications and theme selection (they don't need to be functional).</li></ul><li>The tab switching should be smooth and visually appealing.</li><li>Use <strong>inline styles</strong> for all styling.</li></ul><h2>Additional Notes:</h2><ul><li>You may create separate React components for each tab's content, but they must be invoked within the main Dashboard component.</li><li>Follow the layout and styling as per the reference image (provided separately).</li><li>Your code will be tested with automated test cases checking the DOM structure, styles, and content accuracy.</li><li>Weightage of test cases may vary.</li></ul></section>`,
-      answer: `<div id="output" class="output" style="background-color: rgb(255, 255, 255); padding: 30px; width: 700px; margin: 30px auto; border-radius: 12px; box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; font-family: Arial, sans-serif;"><h1 style="padding: 10px 20px; border: none; background-color: rgb(0, 123, 255); color: white; border-radius: 6px; font-size: 16px;">React Tabbed Dashboard</h1><div style="display: flex; gap: 10px; margin-bottom: 20px;"><button style="padding: 10px 20px; border: none; background-color: rgb(224, 224, 224); border-radius: 6px; font-size: 16px;">Home</button><button style="padding: 10px 20px; border: none; background-color: rgb(224, 224, 224); border-radius: 6px; font-size: 16px;">Profile</button><button style="padding: 10px 20px; border: none; background-color: rgb(224, 224, 224); border-radius: 6px; font-size: 16px;">Settings</button></div><div style="background-color: rgb(249, 249, 249); padding: 20px; border-radius: 10px;"><h2 style="font-size: 24px; margin-bottom: 10px;">Welcome to Your Dashboard</h2><p>This is your summary page.</p></div></div>`,
-      level: 'medium',
-    },
-  ];
+  const [selectedQuestionType, setSelectedQuestionType] = useState("coding")
+  const [editingQuestion, setEditingQuestion] = useState(null)
+  const [editFormData, setEditFormData] = useState({})
+
+  const [codingQuestions, setCodingQuestions] = useState([]);
+
+  const [mcqQuestions, setMcqQuestions] = useState([]);
+  const fetchCodingQuestions = async () => {
+    const res = await fetch('http://localhost:8081/admin/questions')
+    // console.log(res.json());
+    if (!res.ok) throw new Error("Failed to fetch coding questions")
+    return res.json();
+  }
+  const updateCodingQuestion = async (id, payload) => {
+    const res = await fetch(`http://localhost:8081/admin/updatequestions/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) throw new Error("Failed to update coding question")
+    return res.json()
+  }
+   const fetchMCQQuestions = async () => {
+    const res = await fetch(`http://localhost:8081/api/question-mcq`)
+    if (!res.ok) throw new Error("Failed to fetch MCQ questions")
+    return res.json()
+  }
+  const updateMCQQuestion = async (id, payload) => {
+    const res = await fetch(`http://localhost:8081/api/question-mcq/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) throw new Error("Failed to update MCQ question")
+    return res.json()
+  }
+   useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const codingData = await fetchCodingQuestions();
+        console.log(codingData);
+        setCodingQuestions(codingData)
+
+        const mcqData = await fetchMCQQuestions()
+        setMcqQuestions(mcqData)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    loadQuestions()
+  }, [])
+
+
+ const handleEditClick = (question, type) => {
+    setEditingQuestion({ ...question, type })
+    setEditFormData(question)
+  }
+
+  // 🔹 Save edited question
+  const handleSaveEdit = async () => {
+    try {
+      if (editingQuestion.type === "coding") {
+        await updateCodingQuestion(editingQuestion.id, editFormData)
+        setCodingQuestions((prev) =>
+          prev.map((q) => (q.id === editingQuestion.id ? { ...editFormData } : q))
+        )
+      } else {
+        await updateMCQQuestion(editingQuestion.id, editFormData)
+        setMcqQuestions((prev) =>
+          prev.map((q) => (q.id === editingQuestion.id ? { ...editFormData } : q))
+        )
+      }
+      setEditingQuestion(null)
+      setEditFormData({})
+    } catch (err) {
+      console.error("Error updating question:", err)
+      alert("Failed to update question")
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingQuestion(null)
+    setEditFormData({})
+  }
+
+  const handleInputChange = (field, value) => {
+    setEditFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...editFormData.questionOptions]
+    newOptions[index] = value
+    setEditFormData((prev) => ({ ...prev, questionOptions: newOptions }))
+  }
+
+  const renderCodingQuestionsTable = () => (
+    <div className="overflow-x-auto shadow-md border border-gray-200">
+      <table className="min-w-full bg-white border-collapse">
+        <thead>
+          <tr className="bg-[#235a81] text-white text-left">
+            <th className="py-3 px-4 border-b border-gray-300 w-[8%]">Question ID</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[35%]">Question Text</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[35%]">Answer</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[10%]">Level</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[12%]">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {codingQuestions.map((question) => (
+            <tr key={question.id} className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="py-3 px-4 align-top">{question.id}</td>
+              <td className="py-3 px-4 align-centre text-sm max-w-xs no-scrollbar">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "coding" ? (
+                  <textarea
+                    value={editFormData.question_text || ""}
+                    onChange={(e) => handleInputChange("question_text", e.target.value)}
+                    className="w-full min-h-80 p-2 border border-gray-300 rounded text-sm"
+                    placeholder="Enter question text..."
+                  />
+                ) : (
+                  question.question_text
+                )}
+              </td>
+              <td className="py-3 px-4 align-centre text-sm max-w-xs max-h-fit overflow-x-scroll">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "coding" ? (
+                  <textarea
+                    value={editFormData.question_answer || ""}
+                    onChange={(e) => handleInputChange("question_answer", e.target.value)}
+                    className="w-full min-h-80 p-2 border border-gray-300 rounded text-sm"
+                    placeholder="Enter answer..."
+                  />
+                ) : (
+                  <div className="">{question.question_answer}</div>
+                )}
+              </td>
+              <td className="py-3 px-4 align-top">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "coding" ? (
+                  <select
+                    value={editFormData.level || ""}
+                    onChange={(e) => handleInputChange("level", e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded text-sm"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                ) : (
+                  question.level
+                )}
+              </td>
+              <td className="py-3 px-4 align-top flex flex-col sm:flex-row gap-2">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "coding" ? (
+                  <>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleEditClick(question, "coding")}
+                      className="bg-[#235a81] opacity-95 hover:opacity-100 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
+                      Delete
+                    </button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+
+  const renderMCQQuestionsTable = () => (
+    <div className="overflow-x-auto shadow-md border border-gray-200">
+      <table className="min-w-full bg-white border-collapse">
+        <thead>
+          <tr className="bg-[#235a81] text-white text-left">
+            <th className="py-3 px-4 border-b border-gray-300 w-[8%]">Question ID</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[25%]">Question Text</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[20%]">Options</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[12%]">Correct Answer</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[8%]">Level</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[8%]">Marks</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[7%]">Duration</th>
+            <th className="py-3 px-4 border-b border-gray-300 w-[12%]">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {mcqQuestions.map((question) => (
+            <tr key={question.id} className="border-b border-gray-200 hover:bg-gray-50">
+              <td className="py-3 px-4 align-top">{question.id}</td>
+              <td className="py-3 px-4 align-top text-md no-scrollbar">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <textarea
+                    value={editFormData.question_text || ""}
+                    onChange={(e) => handleInputChange("question_text", e.target.value)}
+                    className="w-full h-20 p-2 border border-gray-300 rounded text-sm"
+                    placeholder="Enter question text..."
+                  />
+                ) : (
+                  question.question_text
+                )}
+              </td>
+              <td className="py-3 px-4 align-top text-sm">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <div className="space-y-1">
+                    {editFormData.questionOptions?.map((option, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        className="w-full p-1 border border-gray-300 rounded text-sm"
+                        placeholder={`Option ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <ul className="list-disc list-inside">
+                    {question.questionOptions.map((option, index) => (
+                      <li key={index} className="text-md">
+                        {option}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </td>
+              <td className="py-3 px-4 align-top text-md font-semibold text-green-600">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <input
+                    type="text"
+                    value={editFormData.question_answer || ""}
+                    onChange={(e) => handleInputChange("question_answer", e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded text-md"
+                    placeholder="Correct answer..."
+                  />
+                ) : (
+                  question.question_answer
+                )}
+              </td>
+              <td className="py-3 px-4 align-top">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <select
+                    value={editFormData.level || ""}
+                    onChange={(e) => handleInputChange("level", e.target.value)}
+                    className="w-full p-1 border border-gray-300 rounded text-sm"
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                ) : (
+                  <span
+                    className={`px-2 py-1 rounded text-sm font-medium ${
+                      question.level === "Easy"
+                        ? "bg-green-100 text-green-800"
+                        : question.level === "Medium"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {question.level}
+                  </span>
+                )}
+              </td>
+              <td className="py-3 px-4 align-top text-sm">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <input
+                    type="number"
+                    value={editFormData.marks || ""}
+                    onChange={(e) => handleInputChange("marks", Number.parseInt(e.target.value))}
+                    className="w-full p-1 border border-gray-300 rounded text-sm"
+                    placeholder="Marks"
+                  />
+                ) : (
+                  question.marks
+                )}
+              </td>
+              <td className="py-3 px-4 align-top text-sm">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <input
+                    type="number"
+                    value={editFormData.duration || ""}
+                    onChange={(e) => handleInputChange("duration", Number.parseInt(e.target.value))}
+                    className="w-full p-1 border border-gray-300 rounded text-sm"
+                    placeholder="Duration"
+                  />
+                ) : (
+                  `${question.duration}s`
+                )}
+              </td>
+              <td className="py-3 px-4 align-top flex flex-col sm:flex-row gap-2">
+                {editingQuestion?.id === question.id && editingQuestion?.type === "mcq" ? (
+                  <>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleEditClick(question, "mcq")}
+                      className="bg-[#235a81] opacity-95 hover:opacity-100 text-white font-bold py-2 px-4 rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
+                      Delete
+                    </button>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen  border-2 border-gray-200  rounded-2xl ">
-        <h1 className="text-2xl font-bold mb-6 text-[#235a81]">Manage Questions</h1>
+    <div className="p-4 min-h-screen rounded-2xl">
+      <h1 className="text-2xl font-bold mb-6 text-[#235a81]">Manage Questions</h1>
 
-      <div className="overflow-x-auto shadow-md border border-gray-200">
-        <table className="min-w-full bg-white border-collapse">
-          <thead>
-            <tr className="bg-[#235a81] text-white text-left">
-              <th className="py-3 px-4 border-b border-gray-300 w-[8%]">Question ID</th>
-              <th className="py-3 px-4 border-b border-gray-300 w-[35%]">Question Text</th>
-              <th className="py-3 px-4 border-b border-gray-300 w-[35%]">Answer</th>
-              <th className="py-3 px-4 border-b border-gray-300 w-[10%]">Level</th>
-              <th className="py-3 px-4 border-b border-gray-300 w-[12%]">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((question) => (
-              <tr key={question.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="py-3 px-4 align-top">{question.id}</td>
-                <td className="py-3 px-4 align-centre text-sm max-w-xs ">{question.questionText}</td>
-                <td className="py-3 px-4 align-centre text-sm max-w-xs max-h-fit overflow-x-scroll "><div className=''>{question.answer}</div></td>
-                <td className="py-3 px-4 align-top">{question.level}</td>
-                <td className="py-3 px-4 align-top flex flex-col sm:flex-row gap-2">
-                  <button className="bg-[#235a81] opacity-95 hover:opacity-100 text-white font-bold py-2 px-4 rounded text-sm">
-                    Edit
-                  </button>
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-[#235a81] mb-3">Select Question Type</h3>
+        <div className="flex gap-6">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="questionType"
+              value="coding"
+              checked={selectedQuestionType === "coding"}
+              onChange={(e) => setSelectedQuestionType(e.target.value)}
+              className="mr-2 w-4 h-4 text-[#235a81] focus:ring-[#235a81]"
+            />
+            <span className="text-gray-700 font-medium">Coding Questions</span>
+          </label>
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="questionType"
+              value="mcq"
+              checked={selectedQuestionType === "mcq"}
+              onChange={(e) => setSelectedQuestionType(e.target.value)}
+              className="mr-2 w-4 h-4 text-[#235a81] focus:ring-[#235a81]"
+            />
+            <span className="text-gray-700 font-medium">MCQ Questions</span>
+          </label>
+        </div>
       </div>
+
+      {selectedQuestionType === "coding" ? renderCodingQuestionsTable() : renderMCQQuestionsTable()}
     </div>
-  );
+  )
 }

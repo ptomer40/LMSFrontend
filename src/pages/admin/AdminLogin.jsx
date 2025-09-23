@@ -60,7 +60,7 @@ const AdminLogin = () => {
         const isAdmin = result.isadmin === "true"; // convert string to boolean
         const privileges = result.privileges.split(","); // convert CSV string to array
          console.log(name+username+isAdmin+privileges);
-
+      localStorage.setItem("role","ADMIN");
      sessionStorage.setItem("adminName", name);
   sessionStorage.setItem("adminUsername", username);
   sessionStorage.setItem("isAdmin", isAdmin); // will be stored as string "true"/"false"
